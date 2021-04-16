@@ -1,29 +1,20 @@
 var Web3 = require('web3');
+const { networks } = require('./config.js');
 
-var poa = false;
-if (process.env['NETWORK'] == "deveth") {
-  console.log("Deploying bridge to deveth");
-  var w3 = new Web3("https://rpc.deveth.org/");
-  var bombDelayFromParent = 900000000;
-} else if (process.env['NETWORK'] == "binance") {
-  console.log("Deploying bridge to binance");
-  var w3 = new Web3("https://bsc-dataseed.binance.org/");
-  poa = true;
-} else {
-  console.log("Deploying bridge to mainnet");
-  var w3 = new Web3("https://mainnet.cheapeth.org/rpc");
-  var bombDelayFromParent = 9000000;
-}
+const network = networks[process.env['NETWORK']];
+const poa = network.poa || false;
+const w3 = new Web3(network.rpc);
+const bombDelayFromParent = network.bombDelayFromParent || 900000000;
+const bridgeAddress = network.bridge.address || process.env['BRIDGE'];
+
+console.log("Deploying bridge to " + process.env['NETWORK']);
+console.log("Using bridge at address", bridgeAddress);
 
 let sleep = require('util').promisify(setTimeout);
 var rlp = require('rlp');
 const lib = require('./lib');
 
 const MAX_BLOCK_CHUNK = 10;
-
-const bridgeAddress = process.env['BRIDGE'];
-
-console.log("Using bridge at address", bridgeAddress);
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -46,7 +37,7 @@ async function main() {
       const BridgeFactory = await ethers.getContractFactory("Bridge");
       Bridge = await BridgeFactory.deploy(lib.getBlockRlp(genesis_block), bombDelayFromParent);
     }
-
+    network.bridge.address = Bridge.address;
     console.log("Deployed Bridge address:", Bridge.address);
   } else {
     Bridge = await ethers.getContractAt("Bridge", bridgeAddress);
