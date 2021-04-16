@@ -1,0 +1,16 @@
+{
+  "networks": {
+    "deveth": {
+      "rpc": "https://rpc.deveth.org/",
+      "bombDelayFromParent": 900000000
+    },
+    "binance": {
+      "rpc": "https://bsc-dataseed.binance.org/",
+      "poa": true
+    },
+    "mainnet": {
+      "rpc": "https://mainnet.cheapeth.org/rpc",
+      "bombDelayFromParent": 900000000
+    }
+  }
+}
